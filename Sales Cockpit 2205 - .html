@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Cockpit — Weekly Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f4f4;
+            color: #2c2c2c;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #ffffff;
+            border-bottom: 3px solid #f97316;
+            padding: 28px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 20px; }
+
+        .logo-box {
+            background: #f97316;
+            color: #fff;
+            font-weight: 900;
+            font-size: 1.1rem;
+            padding: 8px 14px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            letter-spacing: -0.3px;
+        }
+
+        .header-title h1 span { color: #f97316; }
+
+        .header-title .date {
+            color: #888;
+            font-size: 0.82rem;
+            margin-top: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        .header-badge {
+            background: #fff4ed;
+            border: 1px solid #f97316;
+            color: #f97316;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .tabs-nav {
+            background: #ffffff;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 40px;
+            display: flex;
+            gap: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .tab-btn {
+            padding: 16px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover { color: #f97316; }
+        .tab-btn.active { color: #f97316; border-bottom-color: #f97316; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .intro {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 30px;
+        }
+
+        .intro-card {
+            background: #ffffff;
+            border: 1px solid #e8e8e8;
+            border-left: 4px solid #f97316;
+            border-radius: 8px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .intro-card p {
+            color: #555;
+            line-height: 1.8;
+            font-size: 0.93rem;
+            margin-bottom: 10px;
+        }
+
+        .intro-card p:last-child { margin-bottom: 0; }
+        .intro-card strong { color: #1a1a1a; }
+
+        .chain-box {
+            background: #fff4ed;
+            border: 1px solid #f97316;
+            border-radius: 8px;
+            padding: 20px 24px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .chain-box .chain-label {
+            color: #f97316;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .chain {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chain-item {
+            background: #ffffff;
+            border: 1px solid #f97316;
+            border-radius: 6px;
+            padding: 9px 18px;
+            color: #f97316;
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+
+        .chain-arrow { color: #f97316; font-size: 1.3rem; font-weight: 700; }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 30px 60px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 40px 0 16px;
+        }
+
+        .section-header h2 {
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .section-line { flex: 1; height: 1px; opacity: 0.25; }
+
+        .senior .section-header h2 { color: #2e7d32; }
+        .senior .section-line { background: #2e7d32; }
+        .senior .table-card { border-top: 3px solid #2e7d32; }
+        .senior .avg-card { border-left: 4px solid #2e7d32; background: #f1f8f1; }
+        .senior .comment-card { border-left: 4px solid #2e7d32; }
+        .senior .avg-value { color: #2e7d32 !important; }
+
+        .mid .section-header h2 { color: #1565c0; }
+        .mid .section-line { background: #1565c0; }
+        .mid .table-card { border-top: 3px solid #1565c0; }
+        .mid .avg-card { border-left: 4px solid #1565c0; background: #f0f4ff; }
+        .mid .comment-card { border-left: 4px solid #1565c0; }
+        .mid .avg-value { color: #1565c0 !important; }
+
+        .junior10 .section-header h2 { color: #e65100; }
+        .junior10 .section-line { background: #e65100; }
+        .junior10 .table-card { border-top: 3px solid #e65100; }
+        .junior10 .avg-card { border-left: 4px solid #e65100; background: #fff3e0; }
+        .junior10 .comment-card { border-left: 4px solid #e65100; }
+        .junior10 .avg-value { color: #e65100 !important; }
+
+        .junior .section-header h2 { color: #f97316; }
+        .junior .section-line { background: #f97316; }
+        .junior .table-card { border-top: 3px solid #f97316; }
+        .junior .avg-card { border-left: 4px solid #f97316; background: #fff7f0; }
+        .junior .comment-card { border-left: 4px solid #f97316; }
+        .junior .avg-value { color: #f97316 !important; }
+
+        .table-card {
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            border: 1px solid #e8e8e8;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr {
+            background: #fafafa;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        thead th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #999;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f5f5f5;
+            transition: background 0.15s;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #fffaf7; }
+
+        tbody td {
+            padding: 11px 16px;
+            font-size: 0.88rem;
+            color: #444;
+        }
+
+        .name-cell { font-weight: 600; color: #1a1a1a; }
+        .highlight-row td { background: #fffaf5; }
+        .highlight-row .name-cell { color: #f97316; }
+
+        .star-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: #f97316;
+        }
+
+        .star-name .star-icon { font-size: 1rem; color: #f59e0b; flex-shrink: 0; }
+
+        .rank-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 0.72rem;
+            font-weight: 800;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        .prio-bar-wrap { display: flex; align-items: center; gap: 10px; }
+
+        .prio-bar {
+            flex: 1;
+            height: 5px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .prio-bar-fill { height: 100%; border-radius: 3px; }
+
+        .prio-val {
+            font-size: 0.82rem;
+            font-weight: 700;
+            min-width: 42px;
+            text-align: right;
+        }
+
+        .avg-card {
+            border-radius: 8px;
+            padding: 18px 24px;
+            margin-bottom: 14px;
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            border: 1px solid #e8e8e8;
+        }
+
+        .avg-item { display: flex; flex-direction: column; gap: 3px; }
+
+        .avg-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #999;
+        }
+
+        .avg-value { font-size: 1.4rem; font-weight: 800; }
+
+        .comment-card {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 28px;
+            color: #666;
+            font-size: 0.86rem;
+            line-height: 1.7;
+            font-style: italic;
+            border: 1px solid #eeeeee;
+        }
+
+        .comment-card strong { color: #1a1a1a; font-style: normal; }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+            margin: 40px 0;
+        }
+
+        .destaques-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .destaque-card {
+            background: #ffffff;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .destaque-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249,115,22,0.12);
+        }
+
+        .destaque-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+
+        .destaque-card.gold::before { background: linear-gradient(90deg, #f97316, #fb923c); }
+        .destaque-card.silver::before { background: linear-gradient(90deg, #94a3b8, #cbd5e1); }
+        .destaque-card.bronze::before { background: linear-gradient(90deg, #b45309, #d97706); }
+        .destaque-card.honorable::before { background: linear-gradient(90deg, #1565c0, #3b82f6); }
+
+        .destaque-medal { font-size: 1.8rem; margin-bottom: 10px; }
+        .destaque-name { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+
+        .destaque-level {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .level-junior { background: #fff4ed; color: #f97316; border: 1px solid #f97316; }
+        .level-junior10 { background: #fff3e0; color: #e65100; border: 1px solid #e65100; }
+        .level-mid { background: #e8f0fe; color: #1565c0; border: 1px solid #1565c0; }
+        .level-senior { background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32; }
+
+        .destaque-desc {
+            color: #666;
+            font-size: 0.83rem;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .destaque-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .destaque-stat {
+            background: #fafafa;
+            border-radius: 6px;
+            padding: 9px 12px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .destaque-stat-label {
+            font-size: 0.63rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 3px;
+        }
+
+        .destaque-stat-value { font-size: 1.05rem; font-weight: 800; color: #1a1a1a; }
+
+        .top5-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+
+        .top5-item {
+            background: #ffffff;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .top5-item:hover {
+            border-color: #f97316;
+            box-shadow: 0 2px 10px rgba(249,115,22,0.1);
+        }
+
+        .top5-rank { font-size: 1.3rem; min-width: 38px; text-align: center; }
+        .top5-info { flex: 1; }
+        .top5-name { font-weight: 700; color: #1a1a1a; font-size: 0.92rem; margin-bottom: 4px; }
+
+        .top5-level-badge {
+            display: inline-block;
+            font-size: 0.63rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .top5-stats { display: flex; gap: 20px; align-items: center; }
+        .top5-stat { text-align: right; }
+
+        .top5-stat-label {
+            font-size: 0.63rem;
+            color: #aaa;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .top5-stat-value { font-size: 0.95rem; font-weight: 800; color: #1a1a1a; }
+        .top5-prio-pct { font-size: 1.05rem; font-weight: 800; color: #2e7d32; min-width: 52px; text-align: right; }
+
+        .last-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+
+        .last-item {
+            background: #ffffff;
+            border: 1px solid #fde8e8;
+            border-left: 4px solid #e53935;
+            border-radius: 8px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .last-rank { font-size: 1.1rem; min-width: 34px; }
+        .last-info { flex: 1; }
+        .last-name { font-weight: 700; color: #1a1a1a; font-size: 0.92rem; margin-bottom: 4px; }
+        .last-stats { display: flex; gap: 20px; }
+        .last-stat { text-align: right; }
+
+        .last-stat-label {
+            font-size: 0.63rem;
+            color: #aaa;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .last-stat-value { font-size: 0.95rem; font-weight: 800; color: #e53935; }
+
+        .warning-box {
+            background: #fff8f0;
+            border: 1px solid #f97316;
+            border-radius: 8px;
+            padding: 14px 18px;
+            color: #7c3a00;
+            font-size: 0.86rem;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .warning-box strong { color: #c2410c; }
+
+        .final-message {
+            background: #fff4ed;
+            border: 1px solid #f97316;
+            border-radius: 12px;
+            padding: 36px 40px;
+            text-align: center;
+            margin: 40px 0 28px;
+        }
+
+        .final-message blockquote {
+            font-size: 1.1rem;
+            font-style: italic;
+            color: #e65100;
+            line-height: 1.7;
+            margin-bottom: 18px;
+            border: none;
+            padding: 0;
+        }
+
+        .final-message p {
+            color: #555;
+            font-size: 0.92rem;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .final-message strong { color: #1a1a1a; }
+
+        .final-cta {
+            display: inline-block;
+            background: #f97316;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 12px 32px;
+            border-radius: 30px;
+            margin-top: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        /* WEEK OVER WEEK */
+        .wow-intro { max-width: 1100px; margin: 32px auto; padding: 0 30px; }
+        .wow-container { max-width: 1100px; margin: 0 auto; padding: 0 30px 60px; }
+
+        .wow-table-card {
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            border: 1px solid #e8e8e8;
+        }
+
+        .wow-table-card table thead tr { background: #fafafa; }
+
+        .delta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .delta-badge.up { background: #e8f5e9; color: #2e7d32; }
+        .delta-badge.down { background: #fde8e8; color: #e53935; }
+        .delta-badge.neutral { background: #f5f5f5; color: #999; }
+
+        .wow-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .wow-summary-card {
+            background: #ffffff;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wow-summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: #f97316;
+        }
+
+        .wow-summary-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .wow-summary-value { font-size: 1.6rem; font-weight: 800; color: #1a1a1a; margin-bottom: 6px; }
+        .wow-summary-delta { font-size: 0.82rem; font-weight: 700; }
+        .delta-positive { color: #2e7d32; }
+        .delta-negative { color: #e53935; }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #bbb;
+            font-size: 0.78rem;
+            border-top: 1px solid #e8e8e8;
+            background: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 20px; }
+            .header h1 { font-size: 1.2rem; }
+            .tabs-nav { padding: 0 16px; }
+            .tab-btn { padding: 14px 14px; font-size: 0.8rem; }
+            .chain { flex-direction: column; }
+            .avg-card { gap: 14px; }
+            .top5-stats { gap: 10px; }
+            .destaques-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-left">
+        <div class="logo-box">AUTO1</div>
+        <div class="header-title">
+            <h1>Sales <span>Cockpit</span> — Adoption Report</h1>
+            <div class="date">Semana de 15 a 22 de Maio de 2026 &nbsp;·&nbsp; Médias Diárias</div>
+        </div>
+    </div>
+    <div class="header-badge">📊 Weekly Report</div>
+</div>
+
+<!-- TABS NAV -->
+<div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('weekly', this)">📋 Weekly Report</button>
+    <button class="tab-btn" onclick="switchTab('wow', this)">📈 Week over Week</button>
+</div>
+
+<!-- ===================== TAB: WEEKLY REPORT ===================== -->
+<div id="tab-weekly" class="tab-content active">
+
+    <div class="intro">
+        <div class="intro-card">
+            <p>Olá equipa! 👋</p>
+            <p>Mais uma semana no retrovisor — e os números não mentem. O Sales Cockpit registou cada chamada, cada merchant contactado, cada decisão de foco. <strong>Esta semana não medimos quem ligou mais. Medimos quem ligou melhor.</strong></p>
+            <p>Há quem esteja a usar o Cockpit como uma arma de precisão — a identificar os merchants certos, a agir no momento certo, a converter esforço em resultado. E há quem ainda esteja a disparar às cegas, com volume alto mas foco baixo. <strong>Os dados abaixo dizem-te exatamente onde estás.</strong> Lê com atenção. 👇</p>
+        </div>
+
+        <div class="chain-box">
+            <div class="chain-label">⚡ A cadeia que separa os bons dos melhores</div>
+            <div class="chain">
+                <div class="chain-item">Call Attempts</div>
+                <div class="chain-arrow">→</div>
+                <div class="chain-item">CA Prio Merchants</div>
+                <div class="chain-arrow">→</div>
+                <div class="chain-item">Prio Merchants Successfully Called</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ===== SENIOR ===== -->
+        <div class="senior">
+            <div class="section-header">
+                <h2>🟢 Senior</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Colaborador</th>
+                            <th>Call Attempts</th>
+                            <th>CA Prio Merchants</th>
+                            <th>Prio MSC</th>
+                            <th>% Prio do Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Ordenado por % Prio desc -->
+                        <tr class="highlight-row">
+                            <td><span class="rank-num" style="background:#fff4ed;color:#f97316;">1</span></td>
+                            <td><div class="star-name"><span class="star-icon">⭐</span>Ricardo Almeida Vaz</div></td>
+                            <td>34.3</td><td>11.8</td><td>9.7</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:34.4%;background:#2e7d32;"></div></div><span class="prio-val" style="color:#2e7d32;">34.4%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">2</span></td>
+                            <td class="name-cell">Jose de Sousa Teixeira</td>
+                            <td>32.8</td><td>8.0</td><td>6.2</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:24.4%;background:#2e7d32;"></div></div><span class="prio-val" style="color:#2e7d32;">24.4%</span></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="avg-card">
+                <div class="avg-item"><div class="avg-label">Call Attempts</div><div class="avg-value">33.6</div></div>
+                <div class="avg-item"><div class="avg-label">CA Prio Merchants</div><div class="avg-value">9.9</div></div>
+                <div class="avg-item"><div class="avg-label">Prio MSC</div><div class="avg-value">8.0</div></div>
+                <div class="avg-item"><div class="avg-label">% Prio do Total</div><div class="avg-value">29.4%</div></div>
+            </div>
+            <div class="comment-card">
+                💬 Dois perfis, uma mensagem clara: <strong>Ricardo Almeida Vaz</strong> lidera o grupo com 34.4% de orientação Prio e 9.7 Prio MSC — números sólidos para um perfil Senior. <strong>Jose de Sousa Teixeira</strong> tem margem para crescer no foco — o volume está lá, falta redirecionar a energia para os merchants que realmente movem a agulha.
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== MID ===== -->
+        <div class="mid">
+            <div class="section-header">
+                <h2>🔵 Mid</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Colaborador</th>
+                            <th>Call Attempts</th>
+                            <th>CA Prio Merchants</th>
+                            <th>Prio MSC</th>
+                            <th>% Prio do Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Ordenado por % Prio desc -->
+                        <tr class="highlight-row">
+                            <td><span class="rank-num" style="background:#e8f0fe;color:#1565c0;">1</span></td>
+                            <td><div class="star-name"><span class="star-icon">⭐</span>Sergio Teixeira Pinto</div></td>
+                            <td>38.5</td><td>25.7</td><td>16.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:66.8%;background:#1565c0;"></div></div><span class="prio-val" style="color:#1565c0;">66.8%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">2</span></td>
+                            <td class="name-cell">Ariana Pinheiro Franca</td>
+                            <td>45.8</td><td>27.0</td><td>17.5</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:58.9%;background:#1565c0;"></div></div><span class="prio-val" style="color:#1565c0;">58.9%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">3</span></td>
+                            <td class="name-cell">Marta Trincao Oliveira</td>
+                            <td>36.8</td><td>20.8</td><td>14.7</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:56.5%;background:#1565c0;"></div></div><span class="prio-val" style="color:#1565c0;">56.5%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">4</span></td>
+                            <td class="name-cell">Rafael Goncalo Martins</td>
+                            <td>37.7</td><td>21.0</td><td>14.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:55.7%;background:#1565c0;"></div></div><span class="prio-val" style="color:#1565c0;">55.7%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">5</span></td>
+                            <td class="name-cell">Mario Jose Fonseca</td>
+                            <td>44.0</td><td>13.3</td><td>7.7</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:30.2%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">30.2%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">6</span></td>
+                            <td class="name-cell">Joao Paulo Bernardo</td>
+                            <td>15.8</td><td>3.2</td><td>2.8</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:20.3%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">20.3%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">7</span></td>
+                            <td class="name-cell">Marco Aurelio Silva</td>
+                            <td>48.3</td><td>4.0</td><td>3.5</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:8.3%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">8.3%</span></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="avg-card">
+                <div class="avg-item"><div class="avg-label">Call Attempts</div><div class="avg-value">38.1</div></div>
+                <div class="avg-item"><div class="avg-label">CA Prio Merchants</div><div class="avg-value">16.4</div></div>
+                <div class="avg-item"><div class="avg-label">Prio MSC</div><div class="avg-value">10.9</div></div>
+                <div class="avg-item"><div class="avg-label">% Prio do Total</div><div class="avg-value">42.4%</div></div>
+            </div>
+            <div class="comment-card">
+                💬 O grupo Mid tem um topo de tabela que impressiona — <strong>Sergio Teixeira Pinto</strong> com 66.8% e <strong>Ariana Pinheiro Franca</strong> com 58.9% são a prova de que volume e foco podem coexistir. Mas a cauda conta a outra metade da história: <strong>Marco Aurelio Silva (8.3%)</strong> tem quase 50 chamadas por dia e apenas 4 vão para Prio Merchants. Isso não é falta de energia — é falta de direção. <strong>O Cockpit já fez o trabalho de priorizar. Agora falta usá-lo.</strong>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== JUNIOR +10M ===== -->
+        <div class="junior10">
+            <div class="section-header">
+                <h2>🟡 Junior +10M</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Colaborador</th>
+                            <th>Call Attempts</th>
+                            <th>CA Prio Merchants</th>
+                            <th>Prio MSC</th>
+                            <th>% Prio do Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Ordenado por % Prio desc -->
+                        <tr class="highlight-row">
+                            <td><span class="rank-num" style="background:#fff3e0;color:#e65100;">1</span></td>
+                            <td><div class="star-name"><span class="star-icon">⭐</span>Rute Silva Dias</div></td>
+                            <td>59.3</td><td>41.7</td><td>24.8</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:70.3%;background:#e65100;"></div></div><span class="prio-val" style="color:#e65100;">70.3%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">2</span></td>
+                            <td class="name-cell">Rodrigo Fernandes Tello</td>
+                            <td>50.7</td><td>31.8</td><td>12.2</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:62.7%;background:#e65100;"></div></div><span class="prio-val" style="color:#e65100;">62.7%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">3</span></td>
+                            <td class="name-cell">Fabio Alexandre Pontes</td>
+                            <td>45.3</td><td>20.2</td><td>11.3</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:44.6%;background:#e65100;"></div></div><span class="prio-val" style="color:#e65100;">44.6%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">4</span></td>
+                            <td class="name-cell">Mario Jorge Cruz</td>
+                            <td>35.4</td><td>15.0</td><td>9.6</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:42.4%;background:#e65100;"></div></div><span class="prio-val" style="color:#e65100;">42.4%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">5</span></td>
+                            <td class="name-cell">Ricardo Fonseca Flores</td>
+                            <td>44.4</td><td>17.0</td><td>10.8</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:38.3%;background:#e65100;"></div></div><span class="prio-val" style="color:#e65100;">38.3%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">6</span></td>
+                            <td class="name-cell">Daniel Lima Barros</td>
+                            <td>34.8</td><td>11.2</td><td>6.7</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:32.2%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">32.2%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">7</span></td>
+                            <td class="name-cell">Bruno Pardal Rodrigues</td>
+                            <td>53.0</td><td>16.7</td><td>11.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:31.5%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">31.5%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">8</span></td>
+                            <td class="name-cell">Julio Cesar Damasio</td>
+                            <td>41.7</td><td>12.7</td><td>8.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:30.5%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">30.5%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">9</span></td>
+                            <td class="name-cell">Lucas Antunes Camargo</td>
+                            <td>36.5</td><td>9.5</td><td>7.5</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:26.0%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">26.0%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">10</span></td>
+                            <td class="name-cell">Carlos Alberto Leite</td>
+                            <td>36.3</td><td>8.8</td><td>5.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:24.2%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">24.2%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">11</span></td>
+                            <td class="name-cell">Gilberto Micael Castro</td>
+                            <td>47.5</td><td>11.0</td><td>5.3</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:23.2%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">23.2%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">12</span></td>
+                            <td class="name-cell">Nuno Brito Vinhas</td>
+                            <td>43.7</td><td>8.2</td><td>4.3</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:18.8%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">18.8%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">13</span></td>
+                            <td class="name-cell">Francisco Sousa Oliveira</td>
+                            <td>53.8</td><td>4.8</td><td>3.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:8.9%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">8.9%</span></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="avg-card">
+                <div class="avg-item"><div class="avg-label">Call Attempts</div><div class="avg-value">44.8</div></div>
+                <div class="avg-item"><div class="avg-label">CA Prio Merchants</div><div class="avg-value">16.0</div></div>
+                <div class="avg-item"><div class="avg-label">Prio MSC</div><div class="avg-value">8.8</div></div>
+                <div class="avg-item"><div class="avg-label">% Prio do Total</div><div class="avg-value">35.7%</div></div>
+            </div>
+            <div class="comment-card">
+                💬 Com mais de 10 meses de experiência, este grupo conhece o terreno — e os dados mostram que há quem o domine. <strong>Rute Silva Dias</strong> é a referência absoluta: 70.3% de foco Prio e 24.8 Prio MSC, o segundo valor mais alto de toda a equipa. <strong>Rodrigo Fernandes Tello</strong> segue de perto. Mas a cauda deste grupo é a que mais preocupa: <strong>Francisco Sousa Oliveira (8.9%)</strong> tem mais de 53 chamadas por dia — e apenas 4.8 vão para Prio Merchants. Com esta experiência, não há justificação. <strong>A próxima semana tem de ser diferente.</strong>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== JUNIOR ===== -->
+        <div class="junior">
+            <div class="section-header">
+                <h2>🟠 Junior</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Colaborador</th>
+                            <th>Call Attempts</th>
+                            <th>CA Prio Merchants</th>
+                            <th>Prio MSC</th>
+                            <th>% Prio do Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Ordenado por % Prio desc -->
+                        <tr>
+                            <td><span class="rank-num" style="background:#fff4ed;color:#f97316;">1</span></td>
+                            <td class="name-cell">Duarte Monteiro Ribeiro</td>
+                            <td>47.0</td><td>44.4</td><td>15.2</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:94.5%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">94.5%</span></div></td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><span class="rank-num" style="background:#fff4ed;color:#f97316;">2</span></td>
+                            <td><div class="star-name"><span class="star-icon">⭐</span>Pedro Miguel Miranda</div></td>
+                            <td>65.8</td><td>60.7</td><td>24.2</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:92.2%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">92.2%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">3</span></td>
+                            <td class="name-cell">Pedro Luis Lopes</td>
+                            <td>52.4</td><td>45.0</td><td>13.4</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:85.9%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">85.9%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">4</span></td>
+                            <td class="name-cell">Goncalo Miguel Batista</td>
+                            <td>52.2</td><td>42.3</td><td>8.7</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:81.0%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">81.0%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">5</span></td>
+                            <td class="name-cell">Filipe Mota Mendes</td>
+                            <td>56.2</td><td>42.2</td><td>14.6</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:75.1%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">75.1%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">6</span></td>
+                            <td class="name-cell">Edvalson Graca Aguiar</td>
+                            <td>25.3</td><td>17.3</td><td>7.7</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:68.4%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">68.4%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">7</span></td>
+                            <td class="name-cell">Diogo Antunes Mendonca</td>
+                            <td>50.2</td><td>31.7</td><td>15.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:63.1%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">63.1%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">8</span></td>
+                            <td class="name-cell">Alexandre Silva Miranda</td>
+                            <td>63.0</td><td>38.2</td><td>7.2</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:60.6%;background:#f97316;"></div></div><span class="prio-val" style="color:#f97316;">60.6%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">9</span></td>
+                            <td class="name-cell">Rodrigo Alves Cardoso</td>
+                            <td>55.2</td><td>24.5</td><td>10.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:44.4%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">44.4%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">10</span></td>
+                            <td class="name-cell">Irallys Goncalves Fernandes</td>
+                            <td>55.7</td><td>24.3</td><td>13.2</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:43.6%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">43.6%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">11</span></td>
+                            <td class="name-cell">Pedro Miguel Nunes</td>
+                            <td>56.5</td><td>23.2</td><td>12.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:41.1%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">41.1%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">12</span></td>
+                            <td class="name-cell">Diogo Rodrigues Gomes</td>
+                            <td>50.0</td><td>18.0</td><td>9.5</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:36.0%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">36.0%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">13</span></td>
+                            <td class="name-cell">Ivan Nunes Rodrigues</td>
+                            <td>38.4</td><td>12.6</td><td>3.8</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:32.8%;background:#f59e0b;"></div></div><span class="prio-val" style="color:#f59e0b;">32.8%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">14</span></td>
+                            <td class="name-cell">Martim Marques Vicente</td>
+                            <td>59.0</td><td>14.2</td><td>6.8</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:24.1%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">24.1%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">15</span></td>
+                            <td class="name-cell">Telmo Inacio Feliciano</td>
+                            <td>69.8</td><td>16.7</td><td>6.3</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:23.9%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">23.9%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">16</span></td>
+                            <td class="name-cell">Andre Lopes Nunes</td>
+                            <td>48.5</td><td>11.2</td><td>5.0</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:23.1%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">23.1%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">17</span></td>
+                            <td class="name-cell">Guilherme Santos Silva</td>
+                            <td>54.8</td><td>11.5</td><td>1.3</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:21.0%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">21.0%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">18</span></td>
+                            <td class="name-cell">Andrei Constantin Peceli</td>
+                            <td>77.0</td><td>14.0</td><td>5.8</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:18.2%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">18.2%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">19</span></td>
+                            <td class="name-cell">Afonso Coelho Ribeiro</td>
+                            <td>68.8</td><td>10.7</td><td>5.7</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:15.6%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">15.6%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">20</span></td>
+                            <td class="name-cell">Andre Cardoso Silva</td>
+                            <td>57.3</td><td>7.2</td><td>2.3</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:12.6%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">12.6%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">21</span></td>
+                            <td class="name-cell">Leticia Guimaraes Oliveira</td>
+                            <td>61.0</td><td>7.0</td><td>1.3</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:11.5%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">11.5%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">22</span></td>
+                            <td class="name-cell">Joao Ferreira Chaves</td>
+                            <td>59.7</td><td>3.0</td><td>0.8</td>
+                            <td><div class="prio-bar-wrap"><div class="prio-bar"><div class="prio-bar-fill" style="width:5.0%;background:#e53935;"></div></div><span class="prio-val" style="color:#e53935;">5.0%</span></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="avg-card">
+                <div class="avg-item"><div class="avg-label">Call Attempts</div><div class="avg-value">56.5</div></div>
+                <div class="avg-item"><div class="avg-label">CA Prio Merchants</div><div class="avg-value">24.0</div></div>
+                <div class="avg-item"><div class="avg-label">Prio MSC</div><div class="avg-value">8.6</div></div>
+                <div class="avg-item"><div class="avg-label">% Prio do Total</div><div class="avg-value">42.5%</div></div>
+            </div>
+            <div class="comment-card">
+                💬 O grupo Junior é o maior, o mais ativo e — honestamente — o mais fascinante de analisar. O topo é de cair o queixo: <strong>Duarte Monteiro Ribeiro (94.5%)</strong> e <strong>Pedro Miguel Miranda (92.2%)</strong> estão a jogar num nível diferente — quase todas as chamadas vão para Prio Merchants. Isso não é sorte, é disciplina. Mas a cauda é longa e preocupante: há quem tenha 60, 70, até 77 chamadas por dia e menos de 20% direcionadas para Prio. <strong>Volume sem foco é ruído. Semana que vem, queremos sinal.</strong>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== DESTAQUES ===== -->
+        <div class="section-header">
+            <h2 style="color:#f97316;">⭐ Destaques da Semana — Os que definem o padrão</h2>
+            <div class="section-line" style="background:#f97316;"></div>
+        </div>
+
+        <p style="color:#666;font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Não basta ligar muito. Não basta ligar para os merchants certos. Os destaques desta semana são quem fez <strong style="color:#1a1a1a;">as duas coisas ao mesmo tempo</strong> — e os números provam-no.</p>
+
+        <div class="destaques-grid">
+            <div class="destaque-card gold">
+                <div class="destaque-medal">🥇</div>
+                <div class="destaque-name">Pedro Miguel Miranda</div>
+                <div><span class="destaque-level level-junior">Junior</span></div>
+                <div class="destaque-desc">O benchmark absoluto desta semana. Quase 66 chamadas por dia, 92% direcionadas para Prio Merchants, e 24.2 Prio MSC — o valor mais alto de toda a equipa. Não há nada nestes números que seja acidente. É método, é foco, é execução. <strong>Este é o padrão.</strong></div>
+                <div class="destaque-stats">
+                    <div class="destaque-stat"><div class="destaque-stat-label">Call Attempts</div><div class="destaque-stat-value">65.8</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">CA Prio</div><div class="destaque-stat-value">60.7</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">Prio MSC</div><div class="destaque-stat-value">24.2</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">% Prio</div><div class="destaque-stat-value" style="color:#f97316;">92.2%</div></div>
+                </div>
+            </div>
+
+            <div class="destaque-card silver">
+                <div class="destaque-medal">🥈</div>
+                <div class="destaque-name">Duarte Monteiro Ribeiro</div>
+                <div><span class="destaque-level level-junior">Junior</span></div>
+                <div class="destaque-desc">O número que define esta semana para Duarte é simples: <strong>94.5%</strong>. O maior rácio de orientação Prio de toda a equipa. Em cada 20 chamadas, 19 vão para os merchants certos. Isso é foco cirúrgico — e merece ser reconhecido.</div>
+                <div class="destaque-stats">
+                    <div class="destaque-stat"><div class="destaque-stat-label">Call Attempts</div><div class="destaque-stat-value">47.0</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">CA Prio</div><div class="destaque-stat-value">44.4</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">Prio MSC</div><div class="destaque-stat-value">15.2</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">% Prio</div><div class="destaque-stat-value" style="color:#f97316;">94.5%</div></div>
+                </div>
+            </div>
+
+            <div class="destaque-card bronze">
+                <div class="destaque-medal">🥉</div>
+                <div class="destaque-name">Rute Silva Dias</div>
+                <div><span class="destaque-level level-junior10">Junior +10M</span></div>
+                <div class="destaque-desc">A rainha do grupo Junior +10M — sem discussão. 70.3% de foco Prio, 24.8 Prio MSC, e quase 60 chamadas diárias. Rute não só lidera o seu grupo — está entre os melhores de toda a equipa. <strong>Consistência que inspira.</strong></div>
+                <div class="destaque-stats">
+                    <div class="destaque-stat"><div class="destaque-stat-label">Call Attempts</div><div class="destaque-stat-value">59.3</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">CA Prio</div><div class="destaque-stat-value">41.7</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">Prio MSC</div><div class="destaque-stat-value">24.8</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">% Prio</div><div class="destaque-stat-value" style="color:#e65100;">70.3%</div></div>
+                </div>
+            </div>
+
+            <div class="destaque-card honorable">
+                <div class="destaque-medal">🎖️</div>
+                <div class="destaque-name">Sergio Teixeira Pinto</div>
+                <div><span class="destaque-level level-mid">Mid</span></div>
+                <div class="destaque-desc">No grupo Mid, Sergio é quem mais claramente percebeu a lógica do Cockpit: não é sobre ligar mais, é sobre ligar melhor. 66.8% de orientação Prio com um volume equilibrado. <strong>Qualidade sobre quantidade — sempre.</strong></div>
+                <div class="destaque-stats">
+                    <div class="destaque-stat"><div class="destaque-stat-label">Call Attempts</div><div class="destaque-stat-value">38.5</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">CA Prio</div><div class="destaque-stat-value">25.7</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">Prio MSC</div><div class="destaque-stat-value">16.0</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">% Prio</div><div class="destaque-stat-value" style="color:#1565c0;">66.8%</div></div>
+                </div>
+            </div>
+
+            <div class="destaque-card honorable">
+                <div class="destaque-medal">🎖️</div>
+                <div class="destaque-name">Ariana Pinheiro Franca</div>
+                <div><span class="destaque-level level-mid">Mid</span></div>
+                <div class="destaque-desc">O maior volume de CA Prio Merchants do grupo Mid — 27.0 — e 17.5 Prio MSC. Ariana combina quantidade e foco de uma forma que poucos conseguem. <strong>Uma semana que fala por si.</strong></div>
+                <div class="destaque-stats">
+                    <div class="destaque-stat"><div class="destaque-stat-label">Call Attempts</div><div class="destaque-stat-value">45.8</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">CA Prio</div><div class="destaque-stat-value">27.0</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">Prio MSC</div><div class="destaque-stat-value">17.5</div></div>
+                    <div class="destaque-stat"><div class="destaque-stat-label">% Prio</div><div class="destaque-stat-value" style="color:#1565c0;">58.9%</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== TOP 5 ===== -->
+        <div class="section-header">
+            <h2 style="color:#2e7d32;">🏆 Top 5 Global — Prio Merchants Successfully Called</h2>
+            <div class="section-line" style="background:#2e7d32;"></div>
+        </div>
+
+        <p style="color:#666;font-size:0.88rem;margin-bottom:16px;line-height:1.7;">O ranking final. Não é quem ligou mais — é quem <strong style="color:#1a1a1a;">chegou mais vezes</strong> aos merchants que importam.</p>
+
+        <div class="top5-list">
+            <div class="top5-item">
+                <div class="top5-rank">🥇</div>
+                <div class="top5-info">
+                    <div class="top5-name">Rute Silva Dias</div>
+                    <span class="top5-level-badge level-junior10">Junior +10M</span>
+                </div>
+                <div class="top5-stats">
+                    <div class="top5-stat"><div class="top5-stat-label">CA Prio</div><div class="top5-stat-value">41.7</div></div>
+                    <div class="top5-stat"><div class="top5-stat-label">Prio MSC</div><div class="top5-stat-value">24.8</div></div>
+                    <div class="top5-prio-pct">70.3%</div>
+                </div>
+            </div>
+            <div class="top5-item">
+                <div class="top5-rank">🥈</div>
+                <div class="top5-info">
+                    <div class="top5-name">Pedro Miguel Miranda</div>
+                    <span class="top5-level-badge level-junior">Junior</span>
+                </div>
+                <div class="top5-stats">
+                    <div class="top5-stat"><div class="top5-stat-label">CA Prio</div><div class="top5-stat-value">60.7</div></div>
+                    <div class="top5-stat"><div class="top5-stat-label">Prio MSC</div><div class="top5-stat-value">24.2</div></div>
+                    <div class="top5-prio-pct">92.2%</div>
+                </div>
+            </div>
+            <div class="top5-item">
+                <div class="top5-rank">🥉</div>
+                <div class="top5-info">
+                    <div class="top5-name">Ariana Pinheiro Franca</div>
+                    <span class="top5-level-badge level-mid">Mid</span>
+                </div>
+                <div class="top5-stats">
+                    <div class="top5-stat"><div class="top5-stat-label">CA Prio</div><div class="top5-stat-value">27.0</div></div>
+                    <div class="top5-stat"><div class="top5-stat-label">Prio MSC</div><div class="top5-stat-value">17.5</div></div>
+                    <div class="top5-prio-pct">58.9%</div>
+                </div>
+            </div>
+            <div class="top5-item">
+                <div class="top5-rank">4º</div>
+                <div class="top5-info">
+                    <div class="top5-name">Sergio Teixeira Pinto</div>
+                    <span class="top5-level-badge level-mid">Mid</span>
+                </div>
+                <div class="top5-stats">
+                    <div class="top5-stat"><div class="top5-stat-label">CA Prio</div><div class="top5-stat-value">25.7</div></div>
+                    <div class="top5-stat"><div class="top5-stat-label">Prio MSC</div><div class="top5-stat-value">16.0</div></div>
+                    <div class="top5-prio-pct">66.8%</div>
+                </div>
+            </div>
+            <div class="top5-item">
+                <div class="top5-rank">5º</div>
+                <div class="top5-info">
+                    <div class="top5-name">Duarte Monteiro Ribeiro</div>
+                    <span class="top5-level-badge level-junior">Junior</span>
+                </div>
+                <div class="top5-stats">
+                    <div class="top5-stat"><div class="top5-stat-label">CA Prio</div><div class="top5-stat-value">44.4</div></div>
+                    <div class="top5-stat"><div class="top5-stat-label">Prio MSC</div><div class="top5-stat-value">15.2</div></div>
+                    <div class="top5-prio-pct">94.5%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== LIGA DOS ÚLTIMOS ===== -->
+        <div class="section-header">
+            <h2 style="color:#e53935;">🔴 Zona de Alerta — Foco Urgente Necessário</h2>
+            <div class="section-line" style="background:#e53935;"></div>
+        </div>
+
+        <p style="color:#e65100;font-size:0.88rem;margin-bottom:16px;font-weight:700;letter-spacing:0.5px;background:#fff3e0;border-left:4px solid #f97316;padding:10px 16px;border-radius:6px;display:inline-block;">⚠️ Volume alto, foco baixo — a combinação mais perigosa em vendas</p>
+
+        <div class="last-list">
+            <div class="last-item">
+                <div class="last-rank">1º</div>
+                <div class="last-info">
+                    <div class="last-name">Joao Ferreira Chaves</div>
+                    <span class="top5-level-badge level-junior">Junior</span>
+                </div>
+                <div class="last-stats">
+                    <div class="last-stat"><div class="last-stat-label">Call Attempts</div><div class="last-stat-value" style="color:#1a1a1a;">59.7</div></div>
+                    <div class="last-stat"><div class="last-stat-label">CA Prio</div><div class="last-stat-value" style="color:#1a1a1a;">3.0</div></div>
+                    <div class="last-stat"><div class="last-stat-label">% Prio</div><div class="last-stat-value">5.0%</div></div>
+                </div>
+            </div>
+            <div class="last-item">
+                <div class="last-rank">2º</div>
+                <div class="last-info">
+                    <div class="last-name">Francisco Sousa Oliveira</div>
+                    <span class="top5-level-badge level-junior10">Junior +10M</span>
+                </div>
+                <div class="last-stats">
+                    <div class="last-stat"><div class="last-stat-label">Call Attempts</div><div class="last-stat-value" style="color:#1a1a1a;">53.8</div></div>
+                    <div class="last-stat"><div class="last-stat-label">CA Prio</div><div class="last-stat-value" style="color:#1a1a1a;">4.8</div></div>
+                    <div class="last-stat"><div class="last-stat-label">% Prio</div><div class="last-stat-value">8.9%</div></div>
+                </div>
+            </div>
+            <div class="last-item">
+                <div class="last-rank">3º</div>
+                <div class="last-info">
+                    <div class="last-name">Marco Aurelio Silva</div>
+                    <span class="top5-level-badge level-mid">Mid</span>
+                </div>
+                <div class="last-stats">
+                    <div class="last-stat"><div class="last-stat-label">Call Attempts</div><div class="last-stat-value" style="color:#1a1a1a;">48.3</div></div>
+                    <div class="last-stat"><div class="last-stat-label">CA Prio</div><div class="last-stat-value" style="color:#1a1a1a;">4.0</div></div>
+                    <div class="last-stat"><div class="last-stat-label">% Prio</div><div class="last-stat-value">8.3%</div></div>
+                </div>
+            </div>
+            <div class="last-item">
+                <div class="last-rank">4º</div>
+                <div class="last-info">
+                    <div class="last-name">Leticia Guimaraes Oliveira</div>
+                    <span class="top5-level-badge level-junior">Junior</span>
+                </div>
+                <div class="last-stats">
+                    <div class="last-stat"><div class="last-stat-label">Call Attempts</div><div class="last-stat-value" style="color:#1a1a1a;">61.0</div></div>
+                    <div class="last-stat"><div class="last-stat-label">CA Prio</div><div class="last-stat-value" style="color:#1a1a1a;">7.0</div></div>
+                    <div class="last-stat"><div class="last-stat-label">% Prio</div><div class="last-stat-value">11.5%</div></div>
+                </div>
+            </div>
+            <div class="last-item">
+                <div class="last-rank">5º</div>
+                <div class="last-info">
+                    <div class="last-name">Andre Cardoso Silva</div>
+                    <span class="top5-level-badge level-junior">Junior</span>
+                </div>
+                <div class="last-stats">
+                    <div class="last-stat"><div class="last-stat-label">Call Attempts</div><div class="last-stat-value" style="color:#1a1a1a;">57.3</div></div>
+                    <div class="last-stat"><div class="last-stat-label">CA Prio</div><div class="last-stat-value" style="color:#1a1a1a;">7.2</div></div>
+                    <div class="last-stat"><div class="last-stat-label">% Prio</div><div class="last-stat-value">12.6%</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            🎯 Estes números contam uma história desconfortável: <strong>há energia, há chamadas, há atividade</strong> — mas está a ser desperdiçada nos merchants errados. O Cockpit já fez o trabalho mais difícil: identificou quem são os Prio Merchants. <strong>O próximo passo é vosso.</strong> Quem aparecer nesta lista na próxima semana vai ter uma conversa individual. Não como punição — como oportunidade de perceber o que está a bloquear o foco. 🚀
+        </div>
+
+        <!-- MENSAGEM FINAL -->
+        <div class="final-message">
+            <blockquote>"Não te perguntamos quantas chamadas fizeste. Perguntamos quantas foram para os merchants certos — e quantos atenderam."</blockquote>
+            <p>Esta semana mostrou que a equipa tem tudo o que precisa para executar bem: volume, ferramenta, dados. O que separa o topo da cauda não é talento — é <strong>disciplina de foco</strong>. Os melhores desta semana provaram que é possível. Agora é a tua vez.</p>
+            <p><strong>Semana que vem, queremos ver movimento. Para cima.</strong> 📈</p>
+            <div class="final-cta">Vamos a isso 💪</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Report gerado com base nos dados do Team Dashboard &nbsp;·&nbsp; 15/05/2026 – 22/05/2026 &nbsp;·&nbsp; Médias diárias<br>
+        Excluídos: TL Inside Sales · Sales Specialist · Sr. T&D Manager
+    </div>
+</div>
+
+<!-- ===================== TAB: WEEK OVER WEEK ===================== -->
+<div id="tab-wow" class="tab-content">
+
+    <div class="wow-intro">
+        <div class="intro-card">
+            <p>📈 <strong>Week over Week</strong> — A evolução não mente.</p>
+            <p>Comparamos a semana de <strong>08 a 15 de Maio</strong> com a semana de <strong>15 a 22 de Maio de 2026</strong>. Os deltas mostram quem está a crescer, quem está a regredir — e quem precisa de agir antes que a tendência se consolide. <strong>Uma semana é um dado. Duas semanas é um padrão.</strong></p>
+        </div>
+    </div>
+
+    <div class="wow-container">
+
+        <!-- RESUMO GLOBAL -->
+        <div class="section-header">
+            <h2 style="color:#f97316;">📊 Resumo Global da Equipa</h2>
+            <div class="section-line" style="background:#f97316;"></div>
+        </div>
+
+        <div class="wow-summary-grid">
+            <div class="wow-summary-card">
+                <div class="wow-summary-label">Call Attempts — Média</div>
+                <div class="wow-summary-value">46.8</div>
+                <div class="wow-summary-delta delta-positive">▲ +2.1 vs semana anterior</div>
+            </div>
+            <div class="wow-summary-card">
+                <div class="wow-summary-label">CA Prio Merchants — Média</div>
+                <div class="wow-summary-value">18.2</div>
+                <div class="wow-summary-delta delta-positive">▲ +1.4 vs semana anterior</div>
+            </div>
+            <div class="wow-summary-card">
+                <div class="wow-summary-label">Prio MSC — Média</div>
+                <div class="wow-summary-value">8.7</div>
+                <div class="wow-summary-delta delta-negative">▼ -0.3 vs semana anterior</div>
+            </div>
+            <div class="wow-summary-card">
+                <div class="wow-summary-label">% Prio do Total — Média</div>
+                <div class="wow-summary-value">38.9%</div>
+                <div class="wow-summary-delta delta-positive">▲ +1.8pp vs semana anterior</div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SENIOR WOW -->
+        <div class="section-header">
+            <h2 style="color:#2e7d32;">🟢 Senior — Evolução Semanal</h2>
+            <div class="section-line" style="background:#2e7d32;"></div>
+        </div>
+
+        <div class="wow-table-card" style="border-top:3px solid #2e7d32;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Colaborador</th>
+                        <th>CA — Semana Ant.</th>
+                        <th>CA — Esta Semana</th>
+                        <th>Δ CA</th>
+                        <th>% Prio — Semana Ant.</th>
+                        <th>% Prio — Esta Semana</th>
+                        <th>Δ % Prio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="rank-num" style="background:#e8f5e9;color:#2e7d32;">1</span></td>
+                        <td class="name-cell">Ricardo Almeida Vaz</td>
+                        <td>31.5</td><td>34.3</td>
+                        <td><span class="delta-badge up">▲ +2.8</span></td>
+                        <td>29.1%</td><td>34.4%</td>
+                        <td><span class="delta-badge up">▲ +5.3pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">2</span></td>
+                        <td class="name-cell">Jose de Sousa Teixeira</td>
+                        <td>34.2</td><td>32.8</td>
+                        <td><span class="delta-badge down">▼ -1.4</span></td>
+                        <td>26.8%</td><td>24.4%</td>
+                        <td><span class="delta-badge down">▼ -2.4pp</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- MID WOW -->
+        <div class="section-header">
+            <h2 style="color:#1565c0;">🔵 Mid — Evolução Semanal</h2>
+            <div class="section-line" style="background:#1565c0;"></div>
+        </div>
+
+        <div class="wow-table-card" style="border-top:3px solid #1565c0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Colaborador</th>
+                        <th>CA — Semana Ant.</th>
+                        <th>CA — Esta Semana</th>
+                        <th>Δ CA</th>
+                        <th>% Prio — Semana Ant.</th>
+                        <th>% Prio — Esta Semana</th>
+                        <th>Δ % Prio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="rank-num" style="background:#e8f0fe;color:#1565c0;">1</span></td>
+                        <td class="name-cell">Sergio Teixeira Pinto</td>
+                        <td>35.2</td><td>38.5</td>
+                        <td><span class="delta-badge up">▲ +3.3</span></td>
+                        <td>61.2%</td><td>66.8%</td>
+                        <td><span class="delta-badge up">▲ +5.6pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">2</span></td>
+                        <td class="name-cell">Ariana Pinheiro Franca</td>
+                        <td>43.0</td><td>45.8</td>
+                        <td><span class="delta-badge up">▲ +2.8</span></td>
+                        <td>55.4%</td><td>58.9%</td>
+                        <td><span class="delta-badge up">▲ +3.5pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">3</span></td>
+                        <td class="name-cell">Marta Trincao Oliveira</td>
+                        <td>38.5</td><td>36.8</td>
+                        <td><span class="delta-badge down">▼ -1.7</span></td>
+                        <td>58.2%</td><td>56.5%</td>
+                        <td><span class="delta-badge down">▼ -1.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">4</span></td>
+                        <td class="name-cell">Rafael Goncalo Martins</td>
+                        <td>36.0</td><td>37.7</td>
+                        <td><span class="delta-badge up">▲ +1.7</span></td>
+                        <td>53.1%</td><td>55.7%</td>
+                        <td><span class="delta-badge up">▲ +2.6pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">5</span></td>
+                        <td class="name-cell">Mario Jose Fonseca</td>
+                        <td>46.3</td><td>44.0</td>
+                        <td><span class="delta-badge down">▼ -2.3</span></td>
+                        <td>33.5%</td><td>30.2%</td>
+                        <td><span class="delta-badge down">▼ -3.3pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">6</span></td>
+                        <td class="name-cell">Joao Paulo Bernardo</td>
+                        <td>18.2</td><td>15.8</td>
+                        <td><span class="delta-badge down">▼ -2.4</span></td>
+                        <td>22.5%</td><td>20.3%</td>
+                        <td><span class="delta-badge down">▼ -2.2pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">7</span></td>
+                        <td class="name-cell">Marco Aurelio Silva</td>
+                        <td>51.0</td><td>48.3</td>
+                        <td><span class="delta-badge down">▼ -2.7</span></td>
+                        <td>10.8%</td><td>8.3%</td>
+                        <td><span class="delta-badge down">▼ -2.5pp</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- JUNIOR +10M WOW -->
+        <div class="section-header">
+            <h2 style="color:#e65100;">🟡 Junior +10M — Evolução Semanal</h2>
+            <div class="section-line" style="background:#e65100;"></div>
+        </div>
+
+        <div class="wow-table-card" style="border-top:3px solid #e65100;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Colaborador</th>
+                        <th>CA — Semana Ant.</th>
+                        <th>CA — Esta Semana</th>
+                        <th>Δ CA</th>
+                        <th>% Prio — Semana Ant.</th>
+                        <th>% Prio — Esta Semana</th>
+                        <th>Δ % Prio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fff3e0;color:#e65100;">1</span></td>
+                        <td class="name-cell">Rute Silva Dias</td>
+                        <td>55.0</td><td>59.3</td>
+                        <td><span class="delta-badge up">▲ +4.3</span></td>
+                        <td>65.8%</td><td>70.3%</td>
+                        <td><span class="delta-badge up">▲ +4.5pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">2</span></td>
+                        <td class="name-cell">Rodrigo Fernandes Tello</td>
+                        <td>48.3</td><td>50.7</td>
+                        <td><span class="delta-badge up">▲ +2.4</span></td>
+                        <td>60.1%</td><td>62.7%</td>
+                        <td><span class="delta-badge up">▲ +2.6pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">3</span></td>
+                        <td class="name-cell">Fabio Alexandre Pontes</td>
+                        <td>47.8</td><td>45.3</td>
+                        <td><span class="delta-badge down">▼ -2.5</span></td>
+                        <td>46.2%</td><td>44.6%</td>
+                        <td><span class="delta-badge down">▼ -1.6pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">4</span></td>
+                        <td class="name-cell">Mario Jorge Cruz</td>
+                        <td>33.0</td><td>35.4</td>
+                        <td><span class="delta-badge up">▲ +2.4</span></td>
+                        <td>39.8%</td><td>42.4%</td>
+                        <td><span class="delta-badge up">▲ +2.6pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">5</span></td>
+                        <td class="name-cell">Ricardo Fonseca Flores</td>
+                        <td>46.0</td><td>44.4</td>
+                        <td><span class="delta-badge down">▼ -1.6</span></td>
+                        <td>40.5%</td><td>38.3%</td>
+                        <td><span class="delta-badge down">▼ -2.2pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">6</span></td>
+                        <td class="name-cell">Daniel Lima Barros</td>
+                        <td>32.5</td><td>34.8</td>
+                        <td><span class="delta-badge up">▲ +2.3</span></td>
+                        <td>29.5%</td><td>32.2%</td>
+                        <td><span class="delta-badge up">▲ +2.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">7</span></td>
+                        <td class="name-cell">Bruno Pardal Rodrigues</td>
+                        <td>55.2</td><td>53.0</td>
+                        <td><span class="delta-badge down">▼ -2.2</span></td>
+                        <td>33.8%</td><td>31.5%</td>
+                        <td><span class="delta-badge down">▼ -2.3pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">8</span></td>
+                        <td class="name-cell">Julio Cesar Damasio</td>
+                        <td>40.0</td><td>41.7</td>
+                        <td><span class="delta-badge up">▲ +1.7</span></td>
+                        <td>28.8%</td><td>30.5%</td>
+                        <td><span class="delta-badge up">▲ +1.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">9</span></td>
+                        <td class="name-cell">Lucas Antunes Camargo</td>
+                        <td>38.2</td><td>36.5</td>
+                        <td><span class="delta-badge down">▼ -1.7</span></td>
+                        <td>28.3%</td><td>26.0%</td>
+                        <td><span class="delta-badge down">▼ -2.3pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">10</span></td>
+                        <td class="name-cell">Carlos Alberto Leite</td>
+                        <td>37.5</td><td>36.3</td>
+                        <td><span class="delta-badge down">▼ -1.2</span></td>
+                        <td>25.8%</td><td>24.2%</td>
+                        <td><span class="delta-badge down">▼ -1.6pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">11</span></td>
+                        <td class="name-cell">Gilberto Micael Castro</td>
+                        <td>45.0</td><td>47.5</td>
+                        <td><span class="delta-badge up">▲ +2.5</span></td>
+                        <td>21.5%</td><td>23.2%</td>
+                        <td><span class="delta-badge up">▲ +1.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">12</span></td>
+                        <td class="name-cell">Nuno Brito Vinhas</td>
+                        <td>45.8</td><td>43.7</td>
+                        <td><span class="delta-badge down">▼ -2.1</span></td>
+                        <td>20.5%</td><td>18.8%</td>
+                        <td><span class="delta-badge down">▼ -1.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">13</span></td>
+                        <td class="name-cell">Francisco Sousa Oliveira</td>
+                        <td>50.2</td><td>53.8</td>
+                        <td><span class="delta-badge up">▲ +3.6</span></td>
+                        <td>11.2%</td><td>8.9%</td>
+                        <td><span class="delta-badge down">▼ -2.3pp</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- JUNIOR WOW -->
+        <div class="section-header">
+            <h2 style="color:#f97316;">🟠 Junior — Evolução Semanal</h2>
+            <div class="section-line" style="background:#f97316;"></div>
+        </div>
+
+        <div class="wow-table-card" style="border-top:3px solid #f97316;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Colaborador</th>
+                        <th>CA — Semana Ant.</th>
+                        <th>CA — Esta Semana</th>
+                        <th>Δ CA</th>
+                        <th>% Prio — Semana Ant.</th>
+                        <th>% Prio — Esta Semana</th>
+                        <th>Δ % Prio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fff4ed;color:#f97316;">1</span></td>
+                        <td class="name-cell">Duarte Monteiro Ribeiro</td>
+                        <td>44.2</td><td>47.0</td>
+                        <td><span class="delta-badge up">▲ +2.8</span></td>
+                        <td>90.1%</td><td>94.5%</td>
+                        <td><span class="delta-badge up">▲ +4.4pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#fff4ed;color:#f97316;">2</span></td>
+                        <td class="name-cell">Pedro Miguel Miranda</td>
+                        <td>60.3</td><td>65.8</td>
+                        <td><span class="delta-badge up">▲ +5.5</span></td>
+                        <td>88.5%</td><td>92.2%</td>
+                        <td><span class="delta-badge up">▲ +3.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">3</span></td>
+                        <td class="name-cell">Pedro Luis Lopes</td>
+                        <td>50.0</td><td>52.4</td>
+                        <td><span class="delta-badge up">▲ +2.4</span></td>
+                        <td>83.2%</td><td>85.9%</td>
+                        <td><span class="delta-badge up">▲ +2.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">4</span></td>
+                        <td class="name-cell">Goncalo Miguel Batista</td>
+                        <td>54.8</td><td>52.2</td>
+                        <td><span class="delta-badge down">▼ -2.6</span></td>
+                        <td>83.5%</td><td>81.0%</td>
+                        <td><span class="delta-badge down">▼ -2.5pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">5</span></td>
+                        <td class="name-cell">Filipe Mota Mendes</td>
+                        <td>53.5</td><td>56.2</td>
+                        <td><span class="delta-badge up">▲ +2.7</span></td>
+                        <td>72.3%</td><td>75.1%</td>
+                        <td><span class="delta-badge up">▲ +2.8pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">6</span></td>
+                        <td class="name-cell">Edvalson Graca Aguiar</td>
+                        <td>27.8</td><td>25.3</td>
+                        <td><span class="delta-badge down">▼ -2.5</span></td>
+                        <td>65.0%</td><td>68.4%</td>
+                        <td><span class="delta-badge up">▲ +3.4pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">7</span></td>
+                        <td class="name-cell">Diogo Antunes Mendonca</td>
+                        <td>48.0</td><td>50.2</td>
+                        <td><span class="delta-badge up">▲ +2.2</span></td>
+                        <td>60.5%</td><td>63.1%</td>
+                        <td><span class="delta-badge up">▲ +2.6pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">8</span></td>
+                        <td class="name-cell">Alexandre Silva Miranda</td>
+                        <td>65.8</td><td>63.0</td>
+                        <td><span class="delta-badge down">▼ -2.8</span></td>
+                        <td>62.3%</td><td>60.6%</td>
+                        <td><span class="delta-badge down">▼ -1.7pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">9</span></td>
+                        <td class="name-cell">Rodrigo Alves Cardoso</td>
+                        <td>52.8</td><td>55.2</td>
+                        <td><span class="delta-badge up">▲ +2.4</span></td>
+                        <td>41.2%</td><td>44.4%</td>
+                        <td><span class="delta-badge up">▲ +3.2pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">10</span></td>
+                        <td class="name-cell">Irallys Goncalves Fernandes</td>
+                        <td>57.3</td><td>55.7</td>
+                        <td><span class="delta-badge down">▼ -1.6</span></td>
+                        <td>45.8%</td><td>43.6%</td>
+                        <td><span class="delta-badge down">▼ -2.2pp</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-num" style="background:#f5f5f5;color:#888;">11</span></td>
+                        <td class="name-cell">Pedro Miguel Nunes</td>
+                        <td>54.0</td><td>56.5</td>
+                        <td><span class="delta-badge up">▲ +2.5</span></td>
+                        <td>38.5%</td><td>41.1%</td>
+                        <td><span class="delta-badge up">▲ +2.6pp</span></td>
+                    </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">12</span></td>
+                            <td class="name-cell">Diogo Rodrigues Gomes</td>
+                            <td>52.3</td><td>50.0</td>
+                            <td><span class="delta-badge down">▼ -2.3</span></td>
+                            <td>38.8%</td><td>36.0%</td>
+                            <td><span class="delta-badge down">▼ -2.8pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#f5f5f5;color:#888;">13</span></td>
+                            <td class="name-cell">Ivan Nunes Rodrigues</td>
+                            <td>36.0</td><td>38.4</td>
+                            <td><span class="delta-badge up">▲ +2.4</span></td>
+                            <td>30.2%</td><td>32.8%</td>
+                            <td><span class="delta-badge up">▲ +2.6pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">14</span></td>
+                            <td class="name-cell">Martim Marques Vicente</td>
+                            <td>61.5</td><td>59.0</td>
+                            <td><span class="delta-badge down">▼ -2.5</span></td>
+                            <td>27.3%</td><td>24.1%</td>
+                            <td><span class="delta-badge down">▼ -3.2pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">15</span></td>
+                            <td class="name-cell">Telmo Inacio Feliciano</td>
+                            <td>66.2</td><td>69.8</td>
+                            <td><span class="delta-badge up">▲ +3.6</span></td>
+                            <td>26.5%</td><td>23.9%</td>
+                            <td><span class="delta-badge down">▼ -2.6pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">16</span></td>
+                            <td class="name-cell">Andre Lopes Nunes</td>
+                            <td>46.0</td><td>48.5</td>
+                            <td><span class="delta-badge up">▲ +2.5</span></td>
+                            <td>25.8%</td><td>23.1%</td>
+                            <td><span class="delta-badge down">▼ -2.7pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">17</span></td>
+                            <td class="name-cell">Guilherme Santos Silva</td>
+                            <td>52.0</td><td>54.8</td>
+                            <td><span class="delta-badge up">▲ +2.8</span></td>
+                            <td>23.8%</td><td>21.0%</td>
+                            <td><span class="delta-badge down">▼ -2.8pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">18</span></td>
+                            <td class="name-cell">Andrei Constantin Peceli</td>
+                            <td>74.5</td><td>77.0</td>
+                            <td><span class="delta-badge up">▲ +2.5</span></td>
+                            <td>21.0%</td><td>18.2%</td>
+                            <td><span class="delta-badge down">▼ -2.8pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">19</span></td>
+                            <td class="name-cell">Afonso Coelho Ribeiro</td>
+                            <td>71.2</td><td>68.8</td>
+                            <td><span class="delta-badge down">▼ -2.4</span></td>
+                            <td>18.3%</td><td>15.6%</td>
+                            <td><span class="delta-badge down">▼ -2.7pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">20</span></td>
+                            <td class="name-cell">Andre Cardoso Silva</td>
+                            <td>55.0</td><td>57.3</td>
+                            <td><span class="delta-badge up">▲ +2.3</span></td>
+                            <td>15.2%</td><td>12.6%</td>
+                            <td><span class="delta-badge down">▼ -2.6pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">21</span></td>
+                            <td class="name-cell">Leticia Guimaraes Oliveira</td>
+                            <td>63.5</td><td>61.0</td>
+                            <td><span class="delta-badge down">▼ -2.5</span></td>
+                            <td>14.2%</td><td>11.5%</td>
+                            <td><span class="delta-badge down">▼ -2.7pp</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-num" style="background:#fde8e8;color:#e53935;">22</span></td>
+                            <td class="name-cell">Joao Ferreira Chaves</td>
+                            <td>62.0</td><td>59.7</td>
+                            <td><span class="delta-badge down">▼ -2.3</span></td>
+                            <td>7.8%</td><td>5.0%</td>
+                            <td><span class="delta-badge down">▼ -2.8pp</span></td>
+                        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            Report gerado com base nos dados do Team Dashboard &nbsp;·&nbsp; 15/05/2026 – 22/05/2026 &nbsp;·&nbsp; Médias diárias<br>
+            Excluídos: TL Inside Sales · Sales Specialist · Sr. T&D Manager
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function switchTab(tabName, btn) {
+        document.querySelectorAll('.tab-content').forEach(function(tab) {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(function(b) {
+            b.classList.remove('active');
+        });
+        document.getElementById('tab-' + tabName).classList.add('active');
+        btn.classList.add('active');
+    }
+</script>
+
+</body>
+</html>
+
+                    
